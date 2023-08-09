@@ -8,24 +8,11 @@ This repository contains Python tools for analyzing clustering of galaxies and h
 2. **2PCF Calculation**: A module to calculate the 2PCF from 3D pair counts.
 3. **Random Point Generation**: Tools to generate random points in various geometric configurations, including within a sphere, within a box, and on the surface of a sphere.
 
-## Getting Started
-
-1. **Prerequisites**:
+## Prerequisites
    - Python 3.x
    - numpy
    - scipy
    - Corrfunc
-
-2. **Installation**:
-   ```bash
-   git clone https://github.com/Richard-Sti/ClusteringTools
-   cd ClusteringTools
-   ```
-
-
-   Certainly! Setting up a virtual environment is a best practice to avoid potential conflicts with system-wide packages. Here's the enhanced `Installation` section of your `README.md` that guides users to set up a virtual environment:
-
----
 
 ## Installation
 
