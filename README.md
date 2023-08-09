@@ -18,8 +18,8 @@ This repository contains Python tools for analyzing clustering of galaxies and h
 
    - **Clone the repository** :
       ```bash
-      git clone [your-repository-link]
-      cd [repository-name]
+      git clone https://github.com/Richard-Sti/ClusteringTools
+      cd ClusteringTools
       ```
 
    - **Set up a virtual environment**:
