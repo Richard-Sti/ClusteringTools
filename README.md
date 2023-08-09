@@ -23,6 +23,34 @@ This repository contains Python tools for analyzing clustering of galaxies and h
    ```
 
 
+   Certainly! Setting up a virtual environment is a best practice to avoid potential conflicts with system-wide packages. Here's the enhanced `Installation` section of your `README.md` that guides users to set up a virtual environment:
+
+---
+
+## Installation
+
+   - **Clone the repository** :
+      ```bash
+      git clone [your-repository-link]
+      cd [repository-name]
+      ```
+
+   - **Set up a virtual environment**:
+     ```bash
+     python -m venv venv_clusteringtools
+     source venv_clusteringtools/bin/activate
+     ```
+
+   - **Install the package**:
+     ```bash
+     pip install -e .
+     ```
+
+The flag `-e` installs the code in a development mode, meaning that any changes you make to the code will be immediately available without reinstalling the package. To deactivate the virtual environment when you're done:
+   ```bash
+   deactivate
+   ```
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
