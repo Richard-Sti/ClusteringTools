@@ -20,11 +20,8 @@ from Corrfunc.utils import convert_3d_counts_to_cf
 from .utils import BaseRVS
 
 
-class Mock2PCF:
-    """
-    Tool to calculate the 2PCF of a catalogue.
-    """
-    def __call__(self, pos, rvs_gen, nrandom, bins, random_state=42):
+def tpcf_from_3d_counts(pos, rvs_gen, nrandom, bins, periodic,
+                        random_state=42):
         """
         Calculate the 2PCF from 3D pair counts.
 
@@ -38,6 +35,8 @@ class Mock2PCF:
             Number of random points to generate.
         bins : 1-dimensional array of shape `(nbins,)`
             Separation bins.
+        periodic : bool
+            Whether the data is periodic.
         random_state : int, optional
             Random state for the RVS generator.
 
@@ -54,14 +53,14 @@ class Mock2PCF:
                            dtype=numpy.float64)
 
         dd = DD(autocorr=1, nthreads=1, binfile=bins,
-                X1=pos[:, 0], Y1=pos[:, 1], Z1=pos[:, 2], periodic=False)
+                X1=pos[:, 0], Y1=pos[:, 1], Z1=pos[:, 2], periodic=periodic)
         dr = DD(autocorr=0, nthreads=1, binfile=bins,
                 X1=pos[:, 0], Y1=pos[:, 1], Z1=pos[:, 2],
                 X2=rand_pos[:, 0], Y2=rand_pos[:, 1], Z2=rand_pos[:, 2],
-                periodic=False)
+                periodic=periodic)
         rr = DD(autocorr=1, nthreads=1, binfile=bins,
                 X1=rand_pos[:, 0], Y1=rand_pos[:, 1], Z1=rand_pos[:, 2],
-                periodic=False)
+                periodic=periodic)
 
         ndata = pos.shape[0]
         xi = convert_3d_counts_to_cf(ndata, ndata, nrandom, nrandom,
