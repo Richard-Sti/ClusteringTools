@@ -1,3 +1,4 @@
 .vscode
 venv_clusteringtools/
 build/
+clusteringtools.egg-info/
