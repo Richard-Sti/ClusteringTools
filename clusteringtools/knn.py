@@ -241,7 +241,7 @@ class kNN_1DCDF:
     def __call__(self, knn, rvs_gen, nneighbours, nsamples, rmin, rmax, neval,
                  batch_size=None, random_state=42, dtype=numpy.float32):
         """
-        Calculate the CDF for a set of kNNs of halo catalogues.
+        Calculate the kNN-CDF for a set of kNNs of halo catalogues.
 
         Parameters
         ----------
