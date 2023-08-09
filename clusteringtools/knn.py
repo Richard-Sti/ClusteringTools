@@ -23,9 +23,8 @@ from .utils import BaseRVS
 
 
 class kNN_1DCDF:
-    """
-    Object to calculate the 1-dimensional kNN-CDF statistic.
-    """
+    """Class to calculate the 1-dimensional kNN-CDF statistic."""
+
     @staticmethod
     def cdf_from_samples(r, rmin=None, rmax=None, neval=None,
                          dtype=numpy.float32):
@@ -41,7 +40,9 @@ class kNN_1DCDF:
         rmax : float, optional
             Maximum distance to evaluate the CDF.
         neval : int, optional
-            Number of points to evaluate the CDF. By default equal to `len(x)`.
+            Number of logarithmically spaced points at which the CDF is
+            evaluated between `rmin` and `rmax`. By default `None` and the CDF
+            is evaluated at the distances of the samples `r`.
         dtype : numpy dtype, optional
             Calculation data type. By default `numpy.float32`.
 
@@ -52,8 +53,8 @@ class kNN_1DCDF:
         cdf : 1-dimensional array
             CDF evaluated at `r`.
         """
-        r = numpy.copy(r)  # Make a copy not to overwrite the original
-        # Make cuts on distance
+        # Make a copy not to overwrite the original and make distance cuts
+        r = numpy.copy(r)
         r = r[r >= rmin] if rmin is not None else r
         r = r[r <= rmax] if rmax is not None else r
 
@@ -61,7 +62,7 @@ class kNN_1DCDF:
         r = numpy.sort(r)
         cdf = numpy.arange(r.size) / r.size
 
-        if neval is not None:  # Optinally interpolate at given points
+        if neval is not None:
             _r = numpy.logspace(numpy.log10(rmin), numpy.log10(rmax), neval,
                                 dtype=dtype)
             cdf = interp1d(r, cdf, kind="linear", fill_value=numpy.nan,
@@ -90,10 +91,7 @@ class kNN_1DCDF:
             Correlation function evaluated at `rs`.
         """
         assert cdf0.ndim == cdf1.ndim == joint_cdf.ndim == 2
-        corr = numpy.zeros_like(joint_cdf)
-        for k in range(joint_cdf.shape[0]):
-            corr[k, :] = joint_cdf[k, :] - cdf0[k, :] * cdf1[k, :]
-        return corr
+        return joint_cdf - cdf0 * cdf1
 
     def brute_cdf(self, knn, rvs_gen, nneighbours, nsamples, rmin, rmax, neval,
                   random_state=42, dtype=numpy.float32):
@@ -116,8 +114,9 @@ class kNN_1DCDF:
             Minimum distance to evaluate the CDF.
         rmax : float
             Maximum distance to evaluate the CDF.
-        neval : int
-            Number of points to evaluate the CDF.
+        neval : int, optional
+            Number of logarithmically spaced points at which the CDF is
+            evaluated between `rmin` and `rmax`.
         random_state : int, optional
             Random state for the random number generator.
         dtype : numpy dtype, optional
@@ -145,10 +144,9 @@ class kNN_1DCDF:
         return rs, cdf
 
     def joint(self, knn0, knn1, rvs_gen, nneighbours, nsamples, rmin, rmax,
-              neval, batch_size=None, random_state=42,
-              dtype=numpy.float32):
+              neval, batch_size=None, random_state=42, dtype=numpy.float32):
         """
-        Calculate the joint knn-CDF.
+        Calculate the joint kNN-CDF.
 
         Parameters
         ----------
@@ -156,21 +154,19 @@ class kNN_1DCDF:
             NN object of the first catalogue.
         knn1 : `sklearn.neighbors.NearestNeighbors` instance
             NN object of the second catalogue.
-        rvs_gen : :py:class:`csiborgtools.clustering.BaseRVS`
-            Uniform RVS generator matching `knn1` and `knn2`.
+        rvs_gen : instance of :py:class:`csiborgtools.clustering.BaseRVS`
+            Uniform RVS generator matching `knn1` and `knn2` geometry.
         nneighbours : int
             Maximum number of neighbours to use for the kNN-CDF calculation.
-        Rmax : float
-            Maximum radius of the sphere in which to sample random points for
-            the knn-CDF calculation. This should match the CSiBORG catalogues.
         nsamples : int
             Number of random points to sample for the knn-CDF calculation.
         rmin : float
             Minimum distance to evaluate the CDF.
         rmax : float
             Maximum distance to evaluate the CDF.
-        neval : int
-            Number of points to evaluate the CDF.
+        neval : int, optional
+            Number of logarithmically spaced points at which the CDF is
+            evaluated between `rmin` and `rmax`.
         batch_size : int, optional
             Number of random points to sample in each batch. By default equal
             to `nsamples`, however recommeded to be smaller to avoid requesting
@@ -211,16 +207,19 @@ class kNN_1DCDF:
                 jointdist[:, 0] = dist0[:, k]
                 jointdist[:, 1] = dist1[:, k]
                 maxdist = numpy.max(jointdist, axis=1)
+
                 # Joint CDF
                 _counts, __, __ = binned_statistic(
                     maxdist, maxdist, bins=bins, statistic="count",
                     range=(rmin, rmax))
                 joint_cdf[k, :] += _counts
+
                 # First CDF
                 _counts, __, __ = binned_statistic(
                     dist0[:, k], dist0[:, k], bins=bins, statistic="count",
                     range=(rmin, rmax))
                 cdf0[k, :] += _counts
+
                 # Second CDF
                 _counts, __, __ = binned_statistic(
                     dist1[:, k], dist1[:, k], bins=bins, statistic="count",
@@ -230,12 +229,13 @@ class kNN_1DCDF:
         joint_cdf = numpy.cumsum(joint_cdf, axis=-1)
         cdf0 = numpy.cumsum(cdf0, axis=-1)
         cdf1 = numpy.cumsum(cdf1, axis=-1)
+
         for k in range(nneighbours):
             joint_cdf[k, :] /= joint_cdf[k, -1]
             cdf0[k, :] /= cdf0[k, -1]
             cdf1[k, :] /= cdf1[k, -1]
 
-        rs = (bins[1:] + bins[:-1]) / 2     # Bin centers
+        rs = (bins[1:] + bins[:-1]) / 2
         return rs, cdf0, cdf1, joint_cdf
 
     def __call__(self, knn, rvs_gen, nneighbours, nsamples, rmin, rmax, neval,
@@ -257,8 +257,9 @@ class kNN_1DCDF:
             Minimum distance to evaluate the CDF.
         rmax : float
             Maximum distance to evaluate the CDF.
-        neval : int
-            Number of points to evaluate the CDF.
+        neval : int, optional
+            Number of logarithmically spaced points at which the CDF is
+            evaluated between `rmin` and `rmax`.
         batch_size : int, optional
             Number of random points to sample in each batch. By default equal
             to `nsamples`, however recommeded to be smaller to avoid requesting
@@ -280,22 +281,22 @@ class kNN_1DCDF:
         assert nsamples >= batch_size
         nbatches = nsamples // batch_size
 
-        # Preallocate the bins and the CDF array
         bins = numpy.logspace(numpy.log10(rmin), numpy.log10(rmax), neval)
         cdf = numpy.zeros((nneighbours, neval - 1), dtype=dtype)
+
         for i in range(nbatches):
             rand = rvs_gen(batch_size, random_state=random_state + i)
             dist, __ = knn.kneighbors(rand, nneighbours)
 
-            for k in range(nneighbours):  # Count for each neighbour
+            for k in range(nneighbours):
                 _counts, __, __ = binned_statistic(
                     dist[:, k], dist[:, k], bins=bins, statistic="count",
                     range=(rmin, rmax))
                 cdf[k, :] += _counts
 
-        cdf = numpy.cumsum(cdf, axis=-1)  # Cumulative sum, i.e. the CDF
+        cdf = numpy.cumsum(cdf, axis=-1)
         for k in range(nneighbours):
             cdf[k, :] /= cdf[k, -1]
 
-        rs = (bins[1:] + bins[:-1]) / 2     # Bin centers
+        rs = (bins[1:] + bins[:-1]) / 2
         return rs, cdf
