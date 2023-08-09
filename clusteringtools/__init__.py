@@ -14,14 +14,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from warnings import warn
 
-from csiborgtools.clustering.knn import kNN_1DCDF  # noqa
-from csiborgtools.clustering.utils import (BaseRVS, RVSinbox,  # noqa
-                                           RVSinsphere, RVSonsphere,
-                                           normalised_marks)
-
-try:
-    import Corrfunc  # noqa
-
-    from .tpcf import Mock2PCF  # noqa
-except ImportError:
-    warn("`Corrfunc` not installed. 2PCF modules will not be available .")  # noqa
+from .knn import kNN_1DCDF
+from .random import normalised_marks
+from .tpcf import tpcf_from_3d_counts
+from .utils import RVSinbox, RVSinsphere, RVSonsphere
